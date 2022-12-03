@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Main-Class: me.oussa.jfxtp.ServerApplication
+Class-Path: javafx-base-19.jar javafx-graphics-19-win.jar javafx-fxml-19
+ .jar javafx-graphics-19.jar javafx-controls-19.jar javafx-fxml-19-win.j
+ ar javafx-base-19-win.jar javafx-controls-19-win.jar
+
