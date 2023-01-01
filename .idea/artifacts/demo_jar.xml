@@ -3,7 +3,7 @@
     <output-path>$PROJECT_DIR$/out/artifacts/demo_jar</output-path>
     <root id="root">
       <element id="archive" name="demo.jar">
-        <element id="module-output" name="demo" />
+        <element id="module-output" name="ensaschat" />
       </element>
       <element id="library" level="project" name="Maven: org.openjfx:javafx-base:19" />
       <element id="library" level="project" name="Maven: org.openjfx:javafx-graphics:win:19" />
