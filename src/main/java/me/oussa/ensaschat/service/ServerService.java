@@ -8,13 +8,14 @@ import me.oussa.ensaschat.controller.ServerController;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ServerService extends UnicastRemoteObject implements ServerInterface {
 
     private final ServerController serverController;
 
-    // List of clients:
-    private final ArrayList<ClientInterface> clients = new ArrayList<>();
+    // List of online clients:
+    private final HashMap<String, ClientInterface> onlineUsers = new HashMap<>();
 
     public ServerService(ServerController serverController) throws RemoteException {
         this.serverController = serverController;
@@ -30,9 +31,14 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
      * used from the client to send message to the client
      **/
     public void sendToAll(String message) throws RemoteException {
-        for (ClientInterface client : clients) {
-            client.receiveMessage(message.strip());
-        }
+        onlineUsers.forEach((username, client) -> {
+            try {
+                client.receiveMessage(message);
+            } catch (RemoteException e) {
+                System.out.println("Error sending message to " + username);
+                // e.printStackTrace();
+            }
+        });
         serverController.printMessage(message.strip());
     }
 
@@ -41,13 +47,13 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
      * used from the client to add client instance to the server,
      * update clients count and send the updated clients list to all clients
      **/
-    public void addClient(ClientInterface client) throws RemoteException {
-        clients.add(client);
-        serverController.printMessage("[+] " + client.getClientName() + " connected");
+    public void addClient(String clientName, ClientInterface client) throws RemoteException {
+        onlineUsers.put(clientName, client);
+        serverController.printMessage("[+] " + clientName + " connected");
 
         // We can't update the UI from a non-JavaFX thread,
         // so we use Platform.runLater to run it on the JavaFX thread
-        Platform.runLater(() -> serverController.updateClientsCount(clients.size()));
+        Platform.runLater(() -> serverController.updateClientsCount(onlineUsers.size()));
         sendClientsList();
     }
 
@@ -56,10 +62,10 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
      * used from the client to remove client instance from the server
      * and send the updated clients list to all clients
      **/
-    public void removeClient(ClientInterface client) throws RemoteException {
-        clients.remove(client);
-        serverController.printMessage("[-] " + client.getClientName() + " disconnected");
-        Platform.runLater(() -> serverController.updateClientsCount(clients.size()));
+    public void removeClient(String clientName) throws RemoteException {
+        onlineUsers.remove(clientName);
+        serverController.printMessage("[-] " + clientName + " disconnected");
+        Platform.runLater(() -> serverController.updateClientsCount(onlineUsers.size()));
         sendClientsList();
     }
 
@@ -69,9 +75,13 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
      *******************/
 
     // send clients list to all clients
-    private void sendClientsList() throws RemoteException {
-        for (ClientInterface client : clients) {
-            client.updateClientsList(clients);
-        }
+    private void sendClientsList() {
+        onlineUsers.forEach((username, client) -> {
+            try {
+                client.updateClientsList(new ArrayList<>(onlineUsers.keySet()));
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
