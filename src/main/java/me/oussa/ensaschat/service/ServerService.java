@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import me.oussa.ensaschat.common.ClientInterface;
 import me.oussa.ensaschat.common.ServerInterface;
 import me.oussa.ensaschat.controller.ServerController;
+import me.oussa.ensaschat.model.User;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -69,6 +70,23 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
         sendClientsList();
     }
 
+    @Override
+    public User signIn(String username, String password) throws RemoteException {
+        // already validated in client, but why not
+        if (username.isBlank() || password.isBlank()) {
+            return null;
+        }
+
+        // TODO: replace with database calls
+        if (username.equals("admin") && password.equals("admin")) {
+            return new User(username, password);
+        }
+        if (username.equals("user") && password.equals("user")) {
+            return new User(username, password);
+        }
+        return null;
+    }
+
 
     /*******************
      * Non-RMI methods *
@@ -83,5 +101,18 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
                 e.printStackTrace();
             }
         });
+    }
+
+    // kick all clients
+    public void kickAll() {
+        onlineUsers.forEach((username, client) -> {
+            try {
+                client.getKicked();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        });
+        onlineUsers.clear();
+        Platform.runLater(() -> serverController.updateClientsCount(onlineUsers.size()));
     }
 }

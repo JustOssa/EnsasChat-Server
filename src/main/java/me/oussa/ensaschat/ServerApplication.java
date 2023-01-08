@@ -1,9 +1,11 @@
 package me.oussa.ensaschat;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.IOException;
 
@@ -16,7 +18,10 @@ public class ServerApplication extends Application {
         stage.setTitle("Chat Server");
         stage.setScene(scene);
         stage.show();
-        stage.setOnCloseRequest(e -> System.exit(0));
+        stage.setOnCloseRequest(e -> {
+            // controller.kickAll();    // TODO: Restructure the code to make this work (see client structure)
+            System.exit(0);
+        });
     }
 
     public static void main(String[] args) {
