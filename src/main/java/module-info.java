@@ -2,6 +2,7 @@ module me.oussa.ensaschat {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.rmi;
+    requires java.sql;
 
 
     opens me.oussa.ensaschat to javafx.fxml;

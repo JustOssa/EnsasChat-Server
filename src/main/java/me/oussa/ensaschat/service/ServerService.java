@@ -5,9 +5,11 @@ import me.oussa.ensaschat.common.ClientInterface;
 import me.oussa.ensaschat.common.ServerInterface;
 import me.oussa.ensaschat.controller.ServerController;
 import me.oussa.ensaschat.model.User;
+import me.oussa.ensaschat.model.UserDao;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +52,12 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
      * update clients count and send the updated clients list to all clients
      **/
     public void addClient(String clientName, ClientInterface client) throws RemoteException {
+        // if already connected kick the old client
+        if (onlineUsers.containsKey(clientName)) {
+            onlineUsers.get(clientName).getKicked();
+            serverController.printMessage("[-] " + clientName + " disconnected");
+        }
+
         onlineUsers.put(clientName, client);
         serverController.printMessage("[+] " + clientName + " connected");
 
@@ -84,14 +92,35 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
             return null;
         }
 
-        // TODO: replace with database calls
-        if (username.equals("admin") && password.equals("admin")) {
-            return new User(username);
+        UserDao userDao = new UserDao();
+        try {
+            return userDao.signIn(username, password);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
-        if (username.equals("user") && password.equals("user")) {
-            return new User(username);
+    }
+
+
+    /**
+     * RMI method Sign up user
+     *
+     * @param user the user to sign up
+     * @return true if the user was signed up successfully, false otherwise
+     */
+    @Override
+    public boolean signUp(User user) throws RemoteException {
+        if (user.getName().isBlank() || user.getUsername().isBlank() || user.getPassword().isBlank()) {
+            return false;
         }
-        return null;
+
+        UserDao userDao = new UserDao();
+        try {
+            return userDao.signUp(user);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -99,13 +128,14 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
      *
      * @return list of all users
      **/
-    // TODO: fetch users from db
     public List<User> getUsers() {
-        ArrayList<User> users = new ArrayList<>();
-        users.add(new User("admin"));
-        users.add(new User("user"));
-        users.add(new User("test"));
-        return users;
+        UserDao userDao = new UserDao();
+        try {
+            return userDao.getUsers();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 

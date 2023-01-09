@@ -95,7 +95,6 @@ public class ServerController {
 
     @FXML
     protected void onStopServer() {
-        // TODO: Loop through all clients and disconnect them
         // kick all clients
         serverService.kickAll();
 
