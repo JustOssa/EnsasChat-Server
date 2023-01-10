@@ -48,10 +48,7 @@ public class UserDao {
             statement.setString(2, password);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                User user = new User();
-                user.setId(resultSet.getInt("id"));
-                user.setUsername(resultSet.getString("username"));
-                return user;
+                return new User(resultSet.getInt("id"), resultSet.getString("name"), resultSet.getString("username"));
             }
         }
         return null;

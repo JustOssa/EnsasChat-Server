@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import me.oussa.ensaschat.common.ClientInterface;
 import me.oussa.ensaschat.common.ServerInterface;
 import me.oussa.ensaschat.controller.ServerController;
+import me.oussa.ensaschat.model.Message;
 import me.oussa.ensaschat.model.User;
 import me.oussa.ensaschat.model.UserDao;
 
@@ -35,7 +36,7 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
      *
      * @param message the message to send
      **/
-    public void sendToAll(String message) throws RemoteException {
+    public void sendToAll(Message message) {
         onlineUsers.forEach((username, client) -> {
             try {
                 client.receiveMessage(message);
@@ -43,7 +44,7 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
                 e.printStackTrace();
             }
         });
-        serverController.printMessage(message.strip());
+        serverController.printMessage(message);
     }
 
     /**
@@ -55,11 +56,11 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
         // if already connected kick the old client
         if (onlineUsers.containsKey(clientName)) {
             onlineUsers.get(clientName).getKicked();
-            serverController.printMessage("[-] " + clientName + " disconnected");
+            serverController.printLog("[-] " + clientName + " disconnected");
         }
 
         onlineUsers.put(clientName, client);
-        serverController.printMessage("[+] " + clientName + " connected");
+        serverController.printLog("[+] " + clientName + " connected");
 
         // We can't update the UI from a non-JavaFX thread,
         // so we use Platform.runLater to run it on the JavaFX thread
@@ -74,7 +75,7 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
      **/
     public void removeClient(String clientName) throws RemoteException {
         onlineUsers.remove(clientName);
-        serverController.printMessage("[-] " + clientName + " disconnected");
+        serverController.printLog("[-] " + clientName + " disconnected");
         Platform.runLater(() -> serverController.updateClientsCount(onlineUsers.size()));
         sendOnlineClientsList();
     }

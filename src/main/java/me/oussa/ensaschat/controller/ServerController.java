@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
+import me.oussa.ensaschat.model.Message;
 import me.oussa.ensaschat.service.ServerService;
 
 import java.rmi.RemoteException;
@@ -116,12 +117,21 @@ public class ServerController {
 
     @FXML
     protected void onSendClick() throws RemoteException {
-        serverService.sendToAll("Server: " + messageText.getText());
+        Message message = new Message(messageText.getText());
+        serverService.sendToAll(message);
         messageText.clear();
     }
 
-    public void printMessage(String message) {
-        outputText.appendText(message + "\n");
+    public void printMessage(Message message) {
+        if (message.getSender() != null) {
+            outputText.appendText(message.getSender().getUsername() + ": " + message.getContent() + "\n");
+        } else {
+            outputText.appendText("Server: " + message.getContent() + "\n");
+        }
+    }
+
+    public void printLog(String log) {
+        outputText.appendText(log + "\n");
     }
 
     // update the clients count label
