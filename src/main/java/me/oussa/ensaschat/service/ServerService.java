@@ -32,7 +32,7 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
 
     /**
      * RMI method to send message to clients,
-     * used from the client to send message to the client
+     * used from the client to send message to all clients
      *
      * @param message the message to send
      **/
@@ -45,6 +45,21 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
             }
         });
         serverController.printMessage(message);
+    }
+
+    /**
+     * RMI method to send message to a specific client,
+     * used from the client to send message to a specific client
+     *
+     * @param message the message to send
+     **/
+    public void sendMessage(Message message) {
+        try {
+            ClientInterface receiver = onlineUsers.get(message.getReceiver().getUsername());
+            receiver.receiveMessage(message);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

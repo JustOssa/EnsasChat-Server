@@ -116,8 +116,8 @@ public class ServerController {
     }
 
     @FXML
-    protected void onSendClick() throws RemoteException {
-        Message message = new Message(messageText.getText());
+    protected void onSendClick() {
+        Message message = new Message(messageText.getText().strip());
         serverService.sendToAll(message);
         messageText.clear();
     }
