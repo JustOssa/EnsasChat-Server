@@ -28,6 +28,7 @@ public class UserDao {
             List<User> users = new ArrayList<>();
             while (resultSet.next()) {
                 User user = new User(resultSet.getInt("id"), resultSet.getString("name"), resultSet.getString("username"));
+                user.setImage(resultSet.getBytes("image"));
                 users.add(user);
             }
             return users;
@@ -48,7 +49,9 @@ public class UserDao {
             statement.setString(2, password);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return new User(resultSet.getInt("id"), resultSet.getString("name"), resultSet.getString("username"));
+                User user = new User(resultSet.getInt("id"), resultSet.getString("name"), resultSet.getString("username"));
+                user.setImage(resultSet.getBytes("image"));
+                return user;
             }
         }
         return null;
@@ -99,12 +102,16 @@ public class UserDao {
 
     public boolean updateUser(User user) throws SQLException {
         // update user but if a field is empty, don't update it
-        String query = "UPDATE users SET name = COALESCE(NULLIF(?, ''), name), password = COALESCE(NULLIF(?, ''), password) WHERE id = ?";
+        String query = "UPDATE users SET name = COALESCE(NULLIF(?, ''), name), password = COALESCE(NULLIF(?, ''), password), image = COALESCE(NULLIF(?, ''), image) WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, user.getName());
             statement.setString(2, user.getPassword());
-            statement.setInt(3, user.getID());
+            if (user.getImage() != null) {
+                statement.setBytes(3, user.getImage());
+            }
+            statement.setInt(4, user.getID());
             statement.executeUpdate();
+            System.out.println(statement);
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
