@@ -88,4 +88,27 @@ public class UserDao {
             return resultSet.next();
         }
     }
+
+
+    /**
+     * Update user
+     *
+     * @param user user to update
+     * @return true if the user was updated successfully, false otherwise
+     */
+
+    public boolean updateUser(User user) throws SQLException {
+        // update user but if a field is empty, don't update it
+        String query = "UPDATE users SET name = COALESCE(NULLIF(?, ''), name), password = COALESCE(NULLIF(?, ''), password) WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, user.getName());
+            statement.setString(2, user.getPassword());
+            statement.setInt(3, user.getID());
+            statement.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

@@ -154,6 +154,19 @@ public class ServerService extends UnicastRemoteObject implements ServerInterfac
         }
     }
 
+    @Override
+    public boolean updateUser(User user) throws RemoteException {
+        UserDao userDao = new UserDao();
+        try {
+            return userDao.updateUser(user);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+
 
     /* *************** *
      * Non-RMI methods *
